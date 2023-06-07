@@ -16,3 +16,4 @@ router.post('/shop/logout', asyncHanlder(accessController.logout))
 router.post('/shop/handleRefreshToken', asyncHanlder(accessController.handleRefreshToken))
 
 module.exports = router
+

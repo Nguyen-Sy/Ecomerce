@@ -22,7 +22,6 @@ const apiKey = async (req, res, next) => {
                 message: 'Forbiden error'
             })
         }
-
         req.objKey = objKey
         return next()
 
