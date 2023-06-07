@@ -7,13 +7,13 @@ const { authentication } = require('../../auth/authUtils');
 const router = express.Router();
 
 
-router.post('/shop/signup', asyncHanlder(accessController.signUp));
-router.post('/shop/login', asyncHanlder(accessController.login));
+router.post('/signup', asyncHanlder(accessController.signUp));
+router.post('/login', asyncHanlder(accessController.login));
 
 router.use(authentication)
 
-router.post('/shop/logout', asyncHanlder(accessController.logout))
-router.post('/shop/handleRefreshToken', asyncHanlder(accessController.handleRefreshToken))
+router.post('/logout', asyncHanlder(accessController.logout))
+router.post('/handleRefreshToken', asyncHanlder(accessController.handleRefreshToken))
 
 module.exports = router
 

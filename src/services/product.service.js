@@ -2,17 +2,50 @@
 
 const { product, furniture, clothing, elctronic } = require("../models/product.model")
 const { BadRequestError } = require("../core/error.respone")
+const { findAllDraftsForShop,
+    findAllPublishedForShop,
+    publishProductByShop,
+    unpublishProductByShop,
+    searchProductByUser } = require('../models/repository/product.repo')
+
 class ProductFactory {
     // type: enum: ['Clothing', 'Electronic', 'Funiture']
+    static productRegistry = {}
+
+    static registerProductType(type, classRef) {
+        ProductFactory.productRegistry[type] = classRef
+    }
+
     static async createProduct(type, payload) {
-        switch (type) {
-            case 'Electronic':
-                return new Electronic(payload).createProduct()
-            case 'Clothing':
-                return new Clothing(payload).createProduct()
-            default:
-                return BadRequestError('Invalid product type')
-        }
+
+        const productClass = ProductFactory.productRegistry[type]
+        if (!productClass) throw BadRequestError(`Invalid product type:: ${type}`)
+
+        return new productClass(payload).createProduct()
+    }
+
+    //Put
+    static async publishProductByShop({ product_shop, product_id }) {
+        return await publishProductByShop({ product_shop, product_id })
+    }
+
+    static async unpublishProductByShop({ product_shop, product_id }) {
+        return await unpublishProductByShop({ product_shop, product_id })
+    }
+
+    //Query
+    static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }) {
+        const query = { product_shop, isDraft: true }
+        return await findAllDraftsForShop({ query, limit, skip })
+    }
+
+    static async findAllPublishedForShop({ product_shop, limit = 50, skip = 0 }) {
+        const query = { product_shop, isPublished: true }
+        return await findAllPublishedForShop({ query, limit, skip })
+    }
+
+    static async searchProduct({ keySearch }) {
+        return await searchProductByUser({ keySearch })
     }
 }
 
@@ -32,7 +65,7 @@ class Product {
     }
 
     async createProduct(product_id) {
-        return await product.create({...this, _id: product_id})
+        return await product.create({ ...this, _id: product_id })
     }
 }
 
@@ -60,7 +93,7 @@ class Electronic extends Product {
             product_shop: this.product_shop
         })
         if (!newElectronic) throw new BadRequestError('create new Electronic error')
-        
+
         const newProduct = await super.createProduct(newElectronic._id)
         if (!newProduct) throw new BadRequestError('create new product error')
 
@@ -82,5 +115,9 @@ class Funiture extends Product {
         return newProduct
     }
 }
+
+ProductFactory.registerProductType("Clothing", Clothing)
+ProductFactory.registerProductType("Electronic", Electronic)
+ProductFactory.registerProductType("Funiture", Funiture)
 
 module.exports = ProductFactory
