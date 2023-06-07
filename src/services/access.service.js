@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const KeyTokenService = require('./keyToken.service');
 const { createTokenPair } = require('../auth/authUtils');
 const { getInfoData } = require('../utils');
+const { BadRequestError } = require('../core/error.respone');
 
 const ROLES = {
     SHOP: '001',
@@ -17,77 +18,70 @@ const ROLES = {
 class AccessService {
 
     static signUp = async ({ name, email, password }) => {
-        try {
 
-            const holderShop = await shopModel.findOne({ email }).lean()
-            if (holderShop) {
-                return {
-                    code: 'xxxx',
-                    message: "Shop already exists"
-                }
-            }
+        // check email exist
+        const holderShop = await shopModel.findOne({ email }).lean()
+        if (holderShop) {
+            throw new BadRequestError("Error:: Shop already exist")
+        }
 
-            const passwordHash = await bcrypt.hash(password, 10)
+        const passwordHash = await bcrypt.hash(password, 10)
 
-            const newShop = await shopModel.create({
-                email, password: passwordHash, name, roles: [ROLES.SHOP]
+        // create shop and return token + shop info
+        const newShop = await shopModel.create({
+            email, password: passwordHash, name, roles: [ROLES.SHOP]
+        })
+
+        if (newShop) {
+
+            // create privateKey, publicKey
+            const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+                modulusLength: 4096,
+                publicKeyEncoding: {
+                    type: 'pkcs1',
+                    format: 'pem'
+                },
+                privateKeyEncoding: {
+                    type: 'pkcs1',
+                    format: 'pem'
+                },
             })
 
-            if (newShop) {
-                const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-                    modulusLength: 4096,
-                    publicKeyEncoding: {
-                        type: 'pkcs1',
-                        format: 'pem'
-                    },
-                    privateKeyEncoding: {
-                        type: 'pkcs1',
-                        format: 'pem'
-                    },
-                })
+            // save token keyStore
+            const publicKeyString = await KeyTokenService.createKeyToken({
+                userId: newShop._id,
+                publicKey
+            })
 
-                const publicKeyString = await KeyTokenService.createKeyToken({
-                    userId: newShop._id,
-                    publicKey
-                })
-
-                if (!publicKeyString) {
-                    return {
-                        code: 'xxxx',
-                        message: 'publicKeyString error'
-                    }
-                }
-
-                const publicKeyObject = crypto.createPublicKey(publicKeyString)
-
-                //create token pair
-                const tokens = await createTokenPair({ userId: newShop._id }, publicKeyObject, privateKey)
-                console.log(tokens)
-
+            if (!publicKeyString) {
                 return {
-                    code: 201,
-                    metadata: {
-                        shop: getInfoData({ fields: ['_id', 'name', 'email'], object: newShop }),
-                        tokens
-                    }
+                    code: 'xxxx',
+                    message: 'publicKeyString error'
                 }
             }
+
+            const publicKeyObject = crypto.createPublicKey(publicKeyString)
+
+            //create token pair
+            const tokens = await createTokenPair({ userId: newShop._id }, publicKeyObject, privateKey)
+            console.log(tokens)
+
             return {
                 code: 201,
                 metadata: {
-                    shop: newShop,
+                    shop: getInfoData({ fields: ['_id', 'name', 'email'], object: newShop }),
                     tokens
                 }
             }
-
-
-        } catch (error) {
-            return {
-                code: "xxx",
-                message: error.message,
-                status: 'error'
+        }
+        return {
+            code: 201,
+            metadata: {
+                shop: newShop,
+                tokens
             }
         }
+
     }
 }
 

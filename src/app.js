@@ -14,12 +14,28 @@ app.use(express.urlencoded({
     extended: true
 }))
 
-//init db 
+// init db 
 require("./dbs/init.mongodb")
 // const { checkOverLoading } = require("./helpers/check.connect")
 // checkOverLoading()
 
-//init routes
+// init routes
 app.use("/", require("./routes"))
 
+// handle error
+app.use((req, res, next) => {
+    const error = new Error("Not found")
+    error.status = 404
+    next(error)
+})
+
+app.use((error, req, res, next) => {
+    const statusCode = error.status || 500
+    return res.status(statusCode).json({
+        status: 'error',
+        code: statusCode,
+        message: error.message || 'Interal Server error'
+    })
+}
+)
 module.exports = app
