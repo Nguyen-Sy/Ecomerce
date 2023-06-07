@@ -40,6 +40,20 @@ class ProductController {
         }).send(res)
     }
 
+    findAllProducts = async (req, res, next) => {
+        return new SuccessRespone({
+            message: 'Find all products',
+            metadata: await ProductService.findAllProducts(req.query)
+        })
+    }
+
+    findOneProduct = async (req, res, next) => {
+        return new SuccessRespone({
+            message: 'Find all products',
+            metadata: await ProductService.findOneProduct(req.params.product_id)
+        })
+    }
+
     publishProductByShop = async (req, res, next) => {
         return new SuccessRespone({
             message: 'Publish product success',

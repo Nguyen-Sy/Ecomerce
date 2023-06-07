@@ -6,7 +6,9 @@ const { findAllDraftsForShop,
     findAllPublishedForShop,
     publishProductByShop,
     unpublishProductByShop,
-    searchProductByUser } = require('../models/repository/product.repo')
+    searchProductByUser,
+    findAllProduct,
+    findOneProduct } = require('../models/repository/product.repo')
 
 class ProductFactory {
     // type: enum: ['Clothing', 'Electronic', 'Funiture']
@@ -23,6 +25,7 @@ class ProductFactory {
 
         return new productClass(payload).createProduct()
     }
+
 
     //Put
     static async publishProductByShop({ product_shop, product_id }) {
@@ -46,6 +49,19 @@ class ProductFactory {
 
     static async searchProduct({ keySearch }) {
         return await searchProductByUser({ keySearch })
+    }
+
+    static async findAllProducts({ limit = 50, sort = 'ctime', page = 1, filter = { isPublished: true } }) {
+        return await findAllProduct({
+            limit, sort, page, filter,
+            select: ['product_name', 'product_thumb', 'product_price']
+        })
+    }
+
+    static async findOneProduct({ product_id }) {
+        return await findOneProduct({
+            product_id, unSelect: ['__v']
+        })
     }
 }
 
@@ -83,6 +99,10 @@ class Clothing extends Product {
         if (!newProduct) throw new BadRequestError('create new product error')
 
         return newProduct
+    }
+
+    async updateProduct(productId) {
+
     }
 }
 
