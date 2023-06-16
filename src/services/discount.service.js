@@ -3,6 +3,8 @@
 const discount = require("../models/discount.model");
 const {
     findDiscountByCodeAndShopId,
+    findAllDiscountSelect,
+    findAllDiscountUnSelect,
 } = require("../models/repository/discount.repo");
 const { findAllProduct } = require("../models/repository/product.repo");
 const {
@@ -59,6 +61,19 @@ class DiscountService {
         return newDiscount;
     }
 
+    static async getAllDiscountCodeByShop({ limit, page, shopId }) {
+        const discounts = await findAllDiscountSelect({
+            limit: +limit,
+            page: +page,
+            filter: {
+                discount_shopId: shopId,
+                discount_is_active: true,
+            },
+            select: ["discount_code", "discount_name"],
+        });
+        return discounts;
+    }
+
     static async updateDiscount(payload) {
         const { shopId, code } = payload;
         const foundDiscount = await findDiscountByCodeAndShopId({
@@ -78,15 +93,15 @@ class DiscountService {
         return updatedDiscount;
     }
 
-    static async getAllProductAppliedDiscount({ shopId, code }) {
+    static async getAllProductAppliedDiscount({ shopId, code, limit, page }) {
         const foundDiscount = await findDiscountByCodeAndShopId({
             shopId,
             code,
         });
-        if (foundDiscount) throw new NotFoundError("Discount is not exist!!");
+        if (!foundDiscount) throw new NotFoundError("Discount is not exist!!");
 
         let products;
-        if (foundDiscount.discount_apply_to === "product_all") {
+        if (foundDiscount.discount_apply_to === "product-all") {
             products = await findAllProduct({
                 filter: {
                     product_shop: shopId,
@@ -98,7 +113,7 @@ class DiscountService {
                 select: ["product_name", "product_thumb"],
             });
         }
-        if (foundDiscount.discount_apply_to === "product_specific") {
+        if (foundDiscount.discount_apply_to === "product-specific") {
             products = await findAllProduct({
                 filter: {
                     _id: { $in: foundDiscount.discount_product_ids },
@@ -186,7 +201,7 @@ class DiscountService {
         };
     }
 
-    static cancelDiscount = async({ shopId, codeId });
+    // static async cancelDiscount   ({ shopId, codeId })
 }
 
 module.exports = DiscountService;

@@ -46,7 +46,7 @@ class ProductController {
         return new SuccessRespone({
             message: "Find all products",
             metadata: await ProductService.findAllProducts(req.query),
-        });
+        }).send(res);
     };
 
     findOneProduct = async (req, res, next) => {
@@ -55,7 +55,7 @@ class ProductController {
             metadata: await ProductService.findOneProduct(
                 req.params.product_id
             ),
-        });
+        }).send(res);
     };
 
     publishProductByShop = async (req, res, next) => {
