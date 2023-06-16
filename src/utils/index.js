@@ -3,6 +3,9 @@
 const _ = require("lodash");
 const crypto = require("crypto");
 const url = require("node:url");
+const { Types } = require("mongoose");
+
+const castStringToObjectIdMongoose = (id) => new Types.ObjectId(id);
 
 const createPublicAndPrivateKey = () => {
     return crypto.generateKeyPairSync("rsa", {
@@ -63,9 +66,10 @@ const removeUndefindedObject = (obj) => {
 };
 
 module.exports = {
-    getInfoData,
+    castStringToObjectIdMongoose,
     createPublicAndPrivateKey,
     fullUrl,
+    getInfoData,
     getSelectData,
     getUnSelectData,
     updateNestedObjParse,

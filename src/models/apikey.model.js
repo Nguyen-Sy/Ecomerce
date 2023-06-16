@@ -27,4 +27,4 @@ var apiKeySchema = new Schema({
 });
 
 //Export the model
-module.exports = model('DOCUMENT_NAME', apiKeySchema);
+module.exports = model(DOCUMENT_NAME, apiKeySchema);
