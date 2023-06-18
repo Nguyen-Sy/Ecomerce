@@ -6,8 +6,8 @@ class CartController {
         new SuccessRespone({
             message: "Add product to cart success",
             metadata: await CartService.addToCart({
-                userId: req.user.userId,
                 ...req.body,
+                userId: req.user.userId,
             }),
         }).send(res);
     };
@@ -16,8 +16,8 @@ class CartController {
         new SuccessRespone({
             message: "Update existed product quantity success",
             metadata: await CartService.updateExistedProductQuantity({
-                userId: req.user.userId,
                 ...req.body,
+                userId: req.user.userId,
             }),
         }).send(res);
     };
@@ -26,8 +26,8 @@ class CartController {
         new SuccessRespone({
             message: "Delete cart success",
             metadata: await CartService.deleteProductUserCart({
-                userId: req.user.userId,
                 ...req.body,
+                userId: req.user.userId,
             }),
         }).send(res);
     };

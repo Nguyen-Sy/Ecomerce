@@ -37,6 +37,7 @@ class DiscountController {
         new SuccessRespone({
             message: "Get discount amount successful",
             metadata: await DiscountService.getDiscountAmout({
+                userId: req.user.userId,
                 ...req.body,
             }),
         }).send(res);

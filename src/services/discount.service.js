@@ -130,7 +130,10 @@ class DiscountService {
     }
 
     static async getDiscountAmout({ shopId, code, products, userId }) {
-        const foundDiscount = findDiscountByCodeAndShopId({ shopId, code });
+        const foundDiscount = await findDiscountByCodeAndShopId({
+            shopId,
+            code,
+        });
         if (!foundDiscount) throw new NotFoundError("Discount is not existed");
         const {
             discount_shopId,
@@ -148,17 +151,19 @@ class DiscountService {
             discount_apply_to,
             discount_product_ids,
         } = foundDiscount;
-        if (
-            new Date() > new Date(discount_end_day) ||
-            new Date() < new Date(discount_start_day)
-        )
-            throw new BadRequestError("Discount expired");
+        console.log(foundDiscount);
+        
+        // if (
+        //     new Date() > new Date(discount_end_day) ||
+        //     new Date() < new Date(discount_start_day)
+        // )
+        //     throw new BadRequestError("Discount expired");
 
-        if (max_use <= discount_used_count)
+        if (discount_max_use <= discount_used_count)
             throw new BadRequestError("Discount is expired");
 
         if (!discount_is_active)
-            throw new BadRequestError("Discount is expired");
+            throw new BadRequestError("Discount is inactive");
 
         let total = products.reduce(
             (acc, cur) => acc + cur.quantity * cur.price,
@@ -169,12 +174,11 @@ class DiscountService {
                 throw new BadRequestError("Orders is not meet min value");
             }
         }
-
         if (discount_max_use_per_user) {
             const userUseDiscount = discount_used_users.find(
                 (user) => user.userId === userId
             );
-            if (userUseDiscount.used_time >= discount_max_use_per_user)
+            if (userUseDiscount?.used_time >= discount_max_use_per_user)
                 throw new BadRequestError("Discount is expired");
         }
 
