@@ -2,7 +2,11 @@
 
 const { Types } = require("mongoose");
 const { product } = require("../product.model");
-const { getSelectData, getUnSelectData } = require("../../utils");
+const {
+    getSelectData,
+    getUnSelectData,
+    castStringToObjectIdMongoose,
+} = require("../../utils");
 
 const findAllProductForShop = async ({ query, limit, skip }) => {
     return await product
@@ -35,6 +39,13 @@ const findAllProduct = async ({ limit, sort, page, filter, select }) => {
         .lean();
 
     return products.length > 0 ? products : "Have no product in db";
+};
+
+const findProductById = async (productId) => {
+    return await product.findOne({
+        _id: castStringToObjectIdMongoose(productId),
+        isPublished: true,
+    });
 };
 
 const findOneProduct = async ({ product_id, unSelect }) => {
@@ -103,6 +114,7 @@ module.exports = {
     findAllDraftsForShop,
     findAllPublishedForShop,
     findAllProduct,
+    findProductById,
     findOneProduct,
     publishProductByShop,
     unpublishProductByShop,
