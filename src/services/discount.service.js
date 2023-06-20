@@ -151,8 +151,7 @@ class DiscountService {
             discount_apply_to,
             discount_product_ids,
         } = foundDiscount;
-        console.log(foundDiscount);
-        
+
         // if (
         //     new Date() > new Date(discount_end_day) ||
         //     new Date() < new Date(discount_start_day)

@@ -15,6 +15,7 @@ const productSchema = new Schema({
     product_shop: { type: Schema.Types.ObjectId, ref: 'Shop' },
     product_attributes: { type: Schema.Types.Mixed, require: true },
     product_slug: String,
+    product_price: Number,
     product_ratingAverage: {
         type: Number,
         default: 4.5,

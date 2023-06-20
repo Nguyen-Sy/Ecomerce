@@ -8,6 +8,21 @@ const {
     castStringToObjectIdMongoose,
 } = require("../../utils");
 
+const checkProductServer = async (products) => {
+    return await Promise.all(
+        products.map(async (product) => {
+            const foundProduct = await findProductById(product.productId);
+            if (foundProduct) {
+                return {
+                    price: foundProduct.product_price,
+                    quantity: product.quantity,
+                    productId: foundProduct._id,
+                };
+            }
+        })
+    );
+};
+
 const findAllProductForShop = async ({ query, limit, skip }) => {
     return await product
         .find(query)
@@ -111,6 +126,7 @@ const searchProductByUser = async ({ keySearch }) => {
     return results;
 };
 module.exports = {
+    checkProductServer,
     findAllDraftsForShop,
     findAllPublishedForShop,
     findAllProduct,
