@@ -18,7 +18,7 @@ const {
     updateProductById,
 } = require("../models/repository/product.repo");
 const { updateNestedObjParse, removeUndefindedObject } = require("../utils");
-const { remove } = require("lodash");
+const { insertInventory } = require("../models/repository/inventory.repo");
 
 class ProductFactory {
     // type: enum: ['Clothing', 'Electronic', 'Funiture']
@@ -123,7 +123,15 @@ class Product {
     }
 
     async createProduct({ productId }) {
-        return await product.create({ ...this, _id: productId });
+        const newProduct = await product.create({ ...this, _id: productId });
+        if (newProduct) {
+            const {
+                _id: productId,
+                product_shop: shopId,
+                product_quantity: quantity,
+            } = newProduct;
+            await insertInventory({ productId, shopId, quantity });
+        }
     }
 
     async updateProduct({ productId, payload }) {

@@ -92,6 +92,30 @@ class CheckoutService {
             reviewCheckoutOrder,
         };
     }
+
+    static async place_order({
+        cartId,
+        userId,
+        shop_order_ids,
+        user_address = {},
+        user_payment = {},
+    }) {
+        const { newShopOrderIds, reviewCheckoutOrder } =
+            await CheckoutService.reviewCheckout({
+                cartId,
+                userId,
+                shop_order_ids,
+            });
+
+        const products = newShopOrderIds.flatMap(
+            (order) => order.item_products
+        );
+        console.log(products)
+        const productsLength = products.length
+        for(let i =0; i < productsLength; i++){
+            const {productId, quantity} = products[i]
+        }
+    }
 }
 
 module.exports = CheckoutService;
