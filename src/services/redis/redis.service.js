@@ -7,6 +7,15 @@ const {
 } = require("../../models/repository/inventory.repo");
 
 const redisClient = redis.createClient();
+
+redisClient.ping((err, result) => {
+    if (err) {
+        console.error("Error connecting to redis", err);
+    } else {
+        console.log("Connecting to redis");
+    }
+});
+
 const acquireLock = async (productId, quantity, cartId) => {
     const pexpire = promisify(redisClient.pExpire).bind(redisClient);
     const setnxAsync = promisify(redisClient.setNX).bind(redisClient);

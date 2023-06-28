@@ -17,6 +17,7 @@ const checkProductServer = async (products) => {
                     price: foundProduct.product_price,
                     quantity: product.quantity,
                     productId: foundProduct._id,
+                    name: foundProduct.product_name
                 };
             }
         })
