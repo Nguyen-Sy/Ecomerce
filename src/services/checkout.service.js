@@ -4,7 +4,14 @@ const { NotFoundError, BadRequestError } = require("../core/error.respone");
 const { findCartById } = require("../models/repository/cart.repo");
 const { checkProductServer } = require("../models/repository/product.repo");
 const { getDiscountAmout } = require("./discount.service");
-
+const { acquireLock, releaseLock } = require("./redis/redis.service");
+const { order } = require("../models/order.model");
+const { deleteUserCart } = require("./cart.service");
+const {
+    getAllOrderByUserId,
+    getOneOrder,
+} = require("../models/repository/order.repo");
+const { castStringToObjectIdMongoose } = require("../utils");
 class CheckoutService {
     /* 
     {
@@ -110,11 +117,60 @@ class CheckoutService {
         const products = newShopOrderIds.flatMap(
             (order) => order.item_products
         );
-        console.log(products)
-        const productsLength = products.length
-        for(let i =0; i < productsLength; i++){
-            const {productId, quantity} = products[i]
+        console.log(products);
+
+        const acquireProducts = [];
+        const productsLength = products.length;
+        for (let i = 0; i < productsLength; i++) {
+            const { productId, quantity } = products[i];
+            const keyLock = await acquireLock({ productId, quantity, cartId });
+            acquireProducts.push(keyLock ? true : false);
+            if (keyLock) {
+                await releaseLock(keyLock);
+            }
         }
+
+        if (acquireProducts.includes(false)) {
+            throw new BadRequestError(
+                "Some products is updated, please return to your cart"
+            );
+        }
+
+        const newOrder = await order.create({
+            order_userId: userId,
+            order_checkout: reviewCheckoutOrder,
+            order_shipping: user_address,
+            order_payment: user_payment,
+            order_products: newShopOrderIds,
+        });
+
+        if (newOrder) {
+            await deleteUserCart(userId);
+        }
+
+        return newOrder;
+    }
+
+    static async getOrdersByUser(userId) {
+        return await order.findOne({
+            order_userId: castStringToObjectIdMongoose(userId),
+        });
+    }
+
+    static async getOneOrderByUser(orderId) {
+        return await order.findById(orderId);
+    }
+
+    static async cancelOrderByUser({ orderId, userId }) {
+        const cancelOrder = await order.findOneAndUpdate(
+            { _id: orderId },
+            { cart_state: "cancel" },
+            { new: true }
+        );
+        if (!cancelOrder) throw new BadRequestError("Cant cancel the order");
+
+        const { order_products } = cancelOrder;
+        order_products.for 
     }
 }
 

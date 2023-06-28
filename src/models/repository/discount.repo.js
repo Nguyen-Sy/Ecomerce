@@ -27,6 +27,7 @@ const findAllDiscountSelect = async ({
 
     return discounts.length > 0 ? discounts : null;
 };
+
 const findAllDiscountUnSelect = async ({
     limit = 50,
     page = 1,

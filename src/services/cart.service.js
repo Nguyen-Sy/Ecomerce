@@ -126,6 +126,18 @@ class CartService {
             })
             .lean();
     }
+
+    static async deleteUserCart(userId) {
+        const query = {
+            cart_userId: userId,
+            cart_state: "active",
+        };
+        const updateSet = {
+            cart_products: [],
+        };
+
+        return await cart.updateOne(query, updateSet);
+    }
 }
 
 module.exports = CartService;
