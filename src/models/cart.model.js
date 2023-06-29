@@ -19,7 +19,11 @@ const cartSchema = new Schema(
             default: [],
         },
         cart_count_product: Number,
-        cart_userId: { type: Schema.Types.ObjectId, required: true },
+        cart_userId: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: "Shop",
+        },
         // [{productId, shopId, quantity, name, price}]
     },
     {

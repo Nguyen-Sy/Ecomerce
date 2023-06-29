@@ -44,7 +44,7 @@ class nodeMailerSevice {
 
     static sendOTPEmail = async ({ OTP, receiver }) => {
         const encodeVerify = Buffer.from(
-            `${OTP}|${receiver.email}|verify`,
+            `${OTP}|${receiver._id}|verify`,
             "utf-8"
         ).toString("base64");
 
@@ -61,7 +61,7 @@ class nodeMailerSevice {
                     button: {
                         color: "#48cfad", // Optional action button color
                         text: "Confirm your account",
-                        link: `http://localhost:4040/v1/api/shop/verify/${encodeVerify}`,
+                        link: `http://localhost:3000/v1/api/verify/${encodeVerify}`,
                     },
                 },
                 outro: "Need help, or have questions? Just reply to this email, we'd love to help",
@@ -76,13 +76,16 @@ class nodeMailerSevice {
     };
 
     static sendReceiptEmail = async ({ order, receiver }) => {
-        const products = order.order_products.map((e) => {
-            const { name, price, quantity } = e.item_products;
-            return {
-                Name: name,
-                Quantity: quantity,
-                "Total price": `${price} vnđ`,
-            };
+        const products = order.order_products.flatMap((order) => {
+            return order.item_products.flatMap((product) => {
+                const { name, price, quantity } = product;
+                return {
+                    Quantity: quantity,
+                    Name: name,
+                    Price: price,
+                    "Total price": `${price * quantity} vnđ`,
+                };
+            });
         });
 
         const emailBody = {
@@ -104,6 +107,7 @@ class nodeMailerSevice {
                     columns: {
                         customWidth: {
                             Quantity: "10%",
+                            Price: "15%",
                             "Total-price": "15%",
                         },
                     },
@@ -120,7 +124,7 @@ class nodeMailerSevice {
 
     static sendForgotPasswordEmail = async ({ OTP, receiver }) => {
         const encodeForgotPass = Buffer.from(
-            `${OTP}|${receiver.email}|forgot-password`,
+            `${OTP}|${receiver._id}|forgot-password`,
             "utf-8"
         ).toString("base64");
 
@@ -137,7 +141,7 @@ class nodeMailerSevice {
                     button: {
                         color: "#48cfad", // Optional action button color
                         text: "Change your account password",
-                        link: `http://localhost:4040/v1/api/shop/forgotpass/${encodeForgotPass}`,
+                        link: `http://localhost:3000/v1/api/forgotpass/${encodeForgotPass}`,
                     },
                 },
                 outro: "Need help, or have questions? Just reply to this email, we'd love to help",

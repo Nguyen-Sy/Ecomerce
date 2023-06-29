@@ -16,11 +16,11 @@ redisClient.ping((err, result) => {
     }
 });
 
-const acquireLock = async (productId, quantity, cartId) => {
-    const pexpire = promisify(redisClient.pExpire).bind(redisClient);
-    const setnxAsync = promisify(redisClient.setNX).bind(redisClient);
+const acquireLock = async ({ productId, quantity, cartId }) => {
+    const pexpire = promisify(redisClient.pexpire).bind(redisClient);
+    const setnxAsync = promisify(redisClient.setnx).bind(redisClient);
 
-    const key = `lock_shop_${productId}`;
+    const key = `lock_shop_${productId.toString()}`;
     const retryTimes = 10;
     const expireTime = 3000;
 
@@ -38,6 +38,7 @@ const acquireLock = async (productId, quantity, cartId) => {
                 await pexpire(key, expireTime);
                 return key;
             }
+            console.log(isReservation);
             return null;
         } else {
             await new Promise((resolve) => setTimeout(resolve, 50));
@@ -50,7 +51,7 @@ const releaseLock = async (keyLock) => {
     return await delAsyncKey(keyLock);
 };
 
-module.exportss = {
+module.exports = {
     acquireLock,
     releaseLock,
 };

@@ -7,11 +7,9 @@ const { getDiscountAmout } = require("./discount.service");
 const { acquireLock, releaseLock } = require("./redis/redis.service");
 const { order } = require("../models/order.model");
 const { deleteUserCart } = require("./cart.service");
-const {
-    getAllOrderByUserId,
-    getOneOrder,
-} = require("../models/repository/order.repo");
 const { castStringToObjectIdMongoose } = require("../utils");
+const { sendReceiptEmail } = require("../services/nodemailer.service");
+const { findShopById } = require("../models/repository/shop.repo");
 class CheckoutService {
     /* 
     {
@@ -71,8 +69,7 @@ class CheckoutService {
                 priceApplyDiscount: checkCountPrice,
                 item_products: checkedProductServer,
             };
-
-            if (shop_discount) {
+            if (Object.keys(shop_discount).length > 0) {
                 const { discount = 0, totalPrice = 0 } = await getDiscountAmout(
                     {
                         shopId,
@@ -123,11 +120,16 @@ class CheckoutService {
         const productsLength = products.length;
         for (let i = 0; i < productsLength; i++) {
             const { productId, quantity } = products[i];
-            const keyLock = await acquireLock({ productId, quantity, cartId });
+            const keyLock = await acquireLock({
+                productId,
+                quantity,
+                cartId,
+            });
             acquireProducts.push(keyLock ? true : false);
             if (keyLock) {
                 await releaseLock(keyLock);
             }
+            console.log({ keyLock });
         }
 
         if (acquireProducts.includes(false)) {
@@ -146,6 +148,11 @@ class CheckoutService {
 
         if (newOrder) {
             await deleteUserCart(userId);
+            const user = await findShopById({ userId });
+            await sendReceiptEmail({
+                order: newOrder,
+                receiver: user,
+            });
         }
 
         return newOrder;
@@ -157,10 +164,17 @@ class CheckoutService {
         });
     }
 
-    static async getOneOrderByUser(orderId) {
-        return await order.findById(orderId);
+    static async getOneOrderByUser({ userId, orderId }) {
+        const foundOrder = await order.findOne({
+            _id: castStringToObjectIdMongoose(orderId),
+            order_userId: userId,
+        });
+
+        if (!foundOrder) throw new BadRequestError("Invalid order");
+        return foundOrder;
     }
 
+    // is not finish
     static async cancelOrderByUser({ orderId, userId }) {
         const cancelOrder = await order.findOneAndUpdate(
             { _id: orderId },
@@ -170,7 +184,6 @@ class CheckoutService {
         if (!cancelOrder) throw new BadRequestError("Cant cancel the order");
 
         const { order_products } = cancelOrder;
-        order_products.for 
     }
 }
 

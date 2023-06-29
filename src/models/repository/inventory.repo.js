@@ -1,4 +1,4 @@
-const { inventory } = require("../inventory.model");
+const inventory = require("../inventory.model");
 const { castStringToObjectIdMongoose } = require("../../utils");
 
 const insertInventory = async ({
@@ -13,8 +13,8 @@ const insertInventory = async ({
         inven_stock: stock,
         inven_location: location,
     });
+};
 
-}
 const reservationInventory = async ({ productId, quantity, cartId }) => {
     const query = {
         inven_productId: castStringToObjectIdMongoose(productId),

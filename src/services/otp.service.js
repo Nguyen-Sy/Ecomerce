@@ -1,11 +1,13 @@
 "use strict";
+const { BadRequestError } = require("../core/error.respone");
+const { OTP } = require("../models/OTP.model");
 const { createOTP } = require("../models/repository/OTP.repo");
+const { verifyUser } = require("../models/repository/shop.repo");
+const bcrypt = require("bcrypt");
 const {
     sendOTPEmail,
     sendForgotPasswordEmail,
-    sendReceiptEmail,
 } = require("./nodemailer.service");
-const { findShopById } = require("../models/repository/shop.repo");
 
 class OtpService {
     static sendOtpSignup = async (user) => {
@@ -28,9 +30,27 @@ class OtpService {
         return createdOTP;
     };
 
-    static sendReceipt = async ({ userId, order }) => {
-        const user = await findShopById(userId);
-        await sendReceiptEmail({ order, user });
+    static verifyOtp = async (query) => {
+        // query: "OTP|userId|type"
+        // type: enum["verify","forgot password"]
+
+        const text = Buffer.from(query, "base64").toString("utf-8");
+        const params = text.split("|");
+
+        const foundOtp = await OTP.findOne({
+            otp_userId: params[1],
+            otp_type: params[2],
+        });
+
+        const isMatch = bcrypt.compare(foundOtp.otp_code, params[0]);
+        if (!isMatch) throw new BadRequestError("Invalid otp");
+
+        const deletedOtp = await OTP.findByIdAndDelete(foundOtp._id);
+        console.log(deletedOtp);
+        if (deletedOtp.deletedCount === 0)
+            throw new BadRequestError("Invalid OTP");
+
+        return await verifyUser(params[1]);
     };
 }
 
