@@ -13,6 +13,8 @@
 ***
 ## Running the app:
 > *$ npm run dev*
+## [Api document](https://documenter.getpostman.com/view/18966214/2s93zB72ZY)
+api document: https://documenter.getpostman.com/view/18966214/2s93zB72ZY
 *** 
 ## Contact:
 Author: [Nguyen-Sy](https://www.facebook.com/profile.php?id=100008519955319)
