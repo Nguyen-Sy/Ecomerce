@@ -23,11 +23,7 @@ class KeyTokenService {
                 },
                 options = { upsert: true, new: true };
 
-            const tokens = await keytokenModel.findOneAndUpdate(
-                filter,
-                update,
-                options
-            );
+            const tokens = await keytokenModel.findOneAndUpdate(filter, update, options);
 
             return tokens ? tokens.publicKey : null;
         } catch (error) {

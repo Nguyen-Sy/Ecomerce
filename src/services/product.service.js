@@ -132,6 +132,7 @@ class Product {
             } = newProduct;
             await insertInventory({ productId, shopId, quantity });
         }
+        return newProduct;
     }
 
     async updateProduct({ productId, payload }) {
@@ -150,8 +151,11 @@ class Clothing extends Product {
         if (!newClothing)
             throw new BadRequestError("create new Clothing error");
 
-        const newProduct = await super.createProduct(newClothing._id);
-        if (!newProduct) throw new BadRequestError("create new product error");
+        const newProduct = await super.createProduct({
+            productId: newClothing._id,
+        });
+
+        if (!newProduct) throw new BadRequestError("Create product error");
 
         return newProduct;
     }

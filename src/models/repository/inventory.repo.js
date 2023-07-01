@@ -4,13 +4,13 @@ const { castStringToObjectIdMongoose } = require("../../utils");
 const insertInventory = async ({
     productId,
     shopId,
-    stock,
+    quantity,
     location = "Unknow",
 }) => {
     return await inventory.create({
         inven_productId: castStringToObjectIdMongoose(productId),
         inven_shopId: castStringToObjectIdMongoose(shopId),
-        inven_stock: stock,
+        inven_stock: quantity,
         inven_location: location,
     });
 };

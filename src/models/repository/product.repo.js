@@ -17,7 +17,7 @@ const checkProductServer = async (products) => {
                     price: foundProduct.product_price,
                     quantity: product.quantity,
                     productId: foundProduct._id,
-                    name: foundProduct.product_name
+                    name: foundProduct.product_name,
                 };
             }
         })
@@ -112,6 +112,7 @@ const updateProductById = async ({
 };
 
 const searchProductByUser = async ({ keySearch }) => {
+    console.log(keySearch);
     const regexSearch = new RegExp(keySearch);
     const results = await product
         .find(

@@ -66,7 +66,9 @@ class CartService {
                     price: foundProduct.product_price,
                 },
             ];
-            return await userCart.save();
+            return await cart.findByIdAndUpdate(userCart._id, userCart, {
+                new: true,
+            });
         }
 
         return this.updateQuantity({

@@ -76,8 +76,10 @@ class AccessService {
     static login = async ({ email, password, refreshToken = null }) => {
         const foundShop = await findShopByEmail({ email });
         if (!foundShop) throw new BadRequestError("Shop not registed");
+        if (!foundShop.verify)
+            throw new BadRequestError("Shop account is not verify");
 
-        const match = bcrypt.compare(password, foundShop.password);
+        const match = await bcrypt.compare(password, foundShop.password);
         if (!match) throw new AuthFailureError("Authentication Error");
 
         const { privateKey, publicKey } = createPublicAndPrivateKey();
@@ -104,7 +106,7 @@ class AccessService {
     };
 
     static logout = async (keyStore) => {
-        const delKey = KeyTokenService.removeKeyTokenById(keyStore._id);
+        const delKey = await KeyTokenService.removeKeyTokenById(keyStore._id);
         return delKey;
     };
 
